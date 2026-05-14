@@ -7,6 +7,8 @@ class Player {
     /** @type {string} */
     uuid;
     /** @type {string} */
+    textureId;
+    /** @type {string} */
     world;
     /** @type {string} */
     displayName;
@@ -29,6 +31,7 @@ class Player {
     constructor(json) {
         this.name = json.name;
         this.uuid = json.uuid;
+        this.textureId = json.textureId;
         this.world = json.world;
         this.displayName = json.display_name !== undefined ? json.display_name : json.name;
         this.x = 0;
@@ -59,7 +62,8 @@ class Player {
     getHeadUrl() {
         return S.worldList.curWorld.player_tracker.nameplates.heads_url
             .replace(/{uuid}/g, this.uuid)
-            .replace(/{name}/g, this.name);
+            .replace(/{name}/g, this.name)
+            .replace(/{textureId}/g, this.textureId);
     }
     makeNameplateContent(player) {
         const container = document.createElement("div");
