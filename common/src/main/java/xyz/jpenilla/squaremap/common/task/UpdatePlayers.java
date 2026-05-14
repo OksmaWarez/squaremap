@@ -2,7 +2,14 @@ package xyz.jpenilla.squaremap.common.task;
 
 import com.google.inject.Inject;
 import com.google.inject.Provider;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.mojang.authlib.GameProfile;
+import com.mojang.authlib.properties.Property;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Base64;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -96,7 +103,7 @@ public final class UpdatePlayers implements Runnable {
                     playerEntry.put("display_name", htmlComponentSerializer.serialize(this.playerManager.displayName(player)));
                 }
                 playerEntry.put("uuid", player.getUUID().toString().replace("-", ""));
-                playerEntry.put("textureId", player.getPlayerProfile().getSkin().replace("http://textures.minecraft.net/texture/", ""));
+                playerEntry.put("textureId", textureId(player));
                 playerEntry.put("world", Util.levelWebName(world));
                 if (worldConfig.PLAYER_TRACKER_ENABLED) {
                     playerEntry.put("x", Mth.floor(playerLoc.x()));
@@ -125,6 +132,43 @@ public final class UpdatePlayers implements Runnable {
     private static int armorPoints(final ServerPlayer player) {
         final @Nullable AttributeInstance attribute = player.getAttribute(Attributes.ARMOR);
         return attribute == null ? 0 : (int) attribute.getValue();
+    }
+
+    private static String textureId(final Player player) {
+        final GameProfile profile = player.getGameProfile();
+        final Collection<Property> textureProperties = profile.getProperties().get("textures");
+        if (!textureProperties.isEmpty()) {
+            final Property textureProperty = textureProperties.iterator().next();
+            final String value = textureProperty.getValue();
+            if (value != null && !value.isEmpty()) {
+                try {
+                    final String decoded = new String(Base64.getDecoder().decode(value), StandardCharsets.UTF_8);
+                    final JsonObject textureObject = Util.gson().fromJson(decoded, JsonObject.class);
+                    if (textureObject != null && textureObject.has("textures")) {
+                        final JsonObject textures = textureObject.getAsJsonObject("textures");
+                        if (textures.has("SKIN")) {
+                            final JsonObject skin = textures.getAsJsonObject("SKIN");
+                            final JsonElement urlElement = skin.get("url");
+                            if (urlElement != null && !urlElement.isJsonNull()) {
+                                return stripTextureUrl(urlElement.getAsString());
+                            }
+                        }
+                    }
+                } catch (final IllegalArgumentException ignored) {
+                }
+            }
+        }
+        return player.getUUID().toString().replace("-", "");
+    }
+
+    private static String stripTextureUrl(final String url) {
+        if (url.startsWith("http://textures.minecraft.net/texture/")) {
+            return url.substring("http://textures.minecraft.net/texture/".length());
+        }
+        if (url.startsWith("https://textures.minecraft.net/texture/")) {
+            return url.substring("https://textures.minecraft.net/texture/".length());
+        }
+        return url;
     }
 
     // Copied from MapItemSavedData#hasMapInvisibilityItemEquipped(Player)
