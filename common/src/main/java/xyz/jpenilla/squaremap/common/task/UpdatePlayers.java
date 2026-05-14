@@ -96,6 +96,7 @@ public final class UpdatePlayers implements Runnable {
                     playerEntry.put("display_name", htmlComponentSerializer.serialize(this.playerManager.displayName(player)));
                 }
                 playerEntry.put("uuid", player.getUUID().toString().replace("-", ""));
+                playerEntry.put("textureId", player.getPlayerProfile().getSkin().replace("http://textures.minecraft.net/texture/", ""));
                 playerEntry.put("world", Util.levelWebName(world));
                 if (worldConfig.PLAYER_TRACKER_ENABLED) {
                     playerEntry.put("x", Mth.floor(playerLoc.x()));

@@ -76,6 +76,7 @@ export interface PlayerData {
     name: string;
     display_name: string;
     uuid: string;
+    textureId: string;
     world: string;
     x: number;
     y: number;
