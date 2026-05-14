@@ -136,10 +136,10 @@ public final class UpdatePlayers implements Runnable {
 
     private static String textureId(final Player player) {
         final GameProfile profile = player.getGameProfile();
-        final Collection<Property> textureProperties = profile.getProperties().get("textures");
+        final Collection<Property> textureProperties = profile.properties().get("textures");
         if (!textureProperties.isEmpty()) {
             final Property textureProperty = textureProperties.iterator().next();
-            final String value = textureProperty.getValue();
+            final String value = textureProperty.value();
             if (value != null && !value.isEmpty()) {
                 try {
                     final String decoded = new String(Base64.getDecoder().decode(value), StandardCharsets.UTF_8);
